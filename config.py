@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from datadog_api_client import Configuration
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(module)s:%(lineno)d - %(message)s")
+logging.basicConfig(level=logging.ERROR, format="%(asctime)s - %(levelname)s - %(module)s:%(lineno)d - %(message)s")
 logger = logging.getLogger(__name__)
 
 # Load environment variables
@@ -21,4 +21,3 @@ configuration.api_key["apiKeyAuth"] = DATADOG_API_KEY
 configuration.api_key["appKeyAuth"] = DATADOG_APP_KEY
 configuration.server_variables["site"] = DATADOG_SITE
 configuration.verify_ssl = False
-configuration.debug = True

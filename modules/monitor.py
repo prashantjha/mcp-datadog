@@ -3,6 +3,7 @@ from datadog_api_client import ApiClient, Configuration
 from datadog_api_client.v1.api.monitors_api import MonitorsApi
 import os
 import logging
+import sys
 
 # Initialize a separate MCP instance for monitors
 mcp = FastMCP("Datadog Monitor Service")
@@ -14,15 +15,14 @@ configuration.api_key["appKeyAuth"] = os.getenv("DATADOG_APP_KEY")
 configuration.server_variables["site"] = os.getenv("DATADOG_SITE", "datadoghq.com")
 
 # Configure logging
-logging.basicConfig(level=logging.INFO)
-import json
-
+logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(module)s:%(lineno)d - %(message)s', stream=sys.stderr)
 logger = logging.getLogger(__name__)
+import json
 
 @mcp.tool()
 def get_monitor_status(name: str = None, group_states: list[str] = None, tags: list[str] = None) -> dict:
     """Fetch Datadog monitor status."""
-    logger.info("Starting get_monitor_status")
+    # logger.info("Starting get_monitor_status")
     group_states = group_states or []
     tags = tags or []
 
@@ -62,11 +62,16 @@ def get_monitor_status(name: str = None, group_states: list[str] = None, tags: l
                     {"type": "text", "text": "Monitor Status Summary:\n" + json.dumps(summary, indent=2)},
                 ]
             }
-            logger.info("Completed get_monitor_status successfully")
-            return result
+            try:
+                # logger.info("Completed get_monitor_status successfully")
+                return result
+            except TypeError as e:
+                # logger.error(f"Failed to serialize monitor status to JSON: {e}. Data: {monitors_data} or {summary}", exc_info=True)
+                return {"content": [{"type": "text", "text": f"Error serializing monitor status: {e}"}]}
 
     except Exception as e:
-        logger.error(f"Failed to retrieve monitor status: {e}", exc_info=True)
+        # logger.error(f"Failed to retrieve monitor status: {e}", exc_info=True)
         return {"content": [{"type": "text", "text": f"Error fetching monitor status: {e}"}]}
     finally:
-        logger.info("Exiting get_monitor_status")
+        # logger.info("Exiting get_monitor_status")
+        pass

@@ -1,16 +1,18 @@
 from pydantic import BaseModel, Field
 import json
 import time
+import logging
+import sys
 from datadog_api_client import ApiClient
 from datadog_api_client.v2.api.incidents_api import IncidentsApi
 from datadog_api_client.v2.api.spans_api import SpansApi
-from config import configuration, logger
+from config import configuration
 from mcp.server.fastmcp import FastMCP
 
-mcp = FastMCP("Datadog Traces Service")
-
-import logging
+logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(module)s:%(lineno)d - %(message)s', stream=sys.stderr)
 logger = logging.getLogger(__name__)
+
+mcp = FastMCP("Datadog Traces Service")
 
 @mcp.tool()
 def list_traces(
@@ -23,7 +25,7 @@ def list_traces(
     operation: str = Field(default=None, description="Filter by operation name")
 ) -> dict:
     """Retrieves APM traces from Datadog."""
-    logger.info("Starting list_traces")
+    # logger.info("Starting list_traces")
     try:
         with ApiClient(configuration) as api_client:
             spans_api = SpansApi(api_client)
@@ -53,11 +55,16 @@ def list_traces(
             if not response.data:
                 raise ValueError("No traces data returned")
 
-            result = {"content": [{"type": "text", "text": json.dumps(response.data, indent=2)}]}
-            logger.info("Successfully retrieved traces.")
-            return result
+            try:
+                result = {"content": [{"type": "text", "text": json.dumps(response.data, indent=2)}]}
+                # logger.info("Successfully retrieved traces.")
+                return result
+            except TypeError as e:
+                # logger.error(f"Failed to serialize traces to JSON: {e}. Data: {response.data}", exc_info=True)
+                return {"content": [{"type": "text", "text": f"Error serializing traces: {e}"}]}
     except Exception as e:
-        logger.error(f"Failed to retrieve traces: {e}", exc_info=True)
+        # logger.error(f"Failed to retrieve traces: {e}", exc_info=True)
         return {"content": [{"type": "text", "text": f"Error fetching traces: {e}"}]}
     finally:
-        logger.info("Exiting list_traces")
+        # logger.info("Exiting list_traces")
+        pass

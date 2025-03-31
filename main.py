@@ -1,3 +1,7 @@
+import logging
+import sys
+logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(module)s:%(lineno)d - %(message)s', stream=sys.stderr) # Redirect logs to stderr
+
 from mcp.server.fastmcp import FastMCP
 from modules import mcp_tools  # Import tool functions
 
