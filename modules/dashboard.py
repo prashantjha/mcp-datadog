@@ -8,9 +8,6 @@ from datadog_api_client.v1.api.dashboards_api import DashboardsApi
 from config import configuration
 from mcp.server.fastmcp import FastMCP
 
-logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(module)s:%(lineno)d - %(message)s', stream=sys.stderr)
-logger = logging.getLogger(__name__)
-
 mcp = FastMCP("Datadog Dashboards Service")
 
 class DashboardResponse(BaseModel):
@@ -43,7 +40,6 @@ def list_dashboards(
     tags: list[str] = Field(default=None, description="Filter dashboards by tags")
 ) -> dict:
     """Retrieves a list of Datadog dashboards with optional filtering by name and tags."""
-    # logger.info("Starting list_dashboards")
     try:
         with ApiClient(configuration) as api_client:
             dashboards_api = DashboardsApi(api_client)
@@ -78,7 +74,6 @@ def list_dashboards(
                         "message": "Successfully retrieved dashboards."
                     }
                 }
-                # logger.info("Successfully retrieved dashboards.")
                 return result
             else:
                 result = {
@@ -88,10 +83,8 @@ def list_dashboards(
                         "message": "Error: Invalid response from Datadog API."
                     }
                 }
-                # logger.error("Invalid response from Datadog API.")
                 return result
     except Exception as e:
-        # logger.error(f"Failed to retrieve dashboards: {e}", exc_info=True)
         return {
             "content": {
                 "dashboards": [],
@@ -100,13 +93,11 @@ def list_dashboards(
             }
         }
     finally:
-        # logger.info("Exiting list_dashboards")
         pass
 
 @mcp.tool()
 def list_prompts() -> dict:
     """Placeholder function for prompts/list to avoid method not found errors."""
-    # logger.info("Starting list_prompts")
     try:
         result = {
             "content": {
@@ -115,10 +106,8 @@ def list_prompts() -> dict:
                 "message": "No prompts available."
             }
         }
-        # logger.info("No prompts available.")
         return result
     except Exception as e:
-        # logger.error(f"Failed to retrieve prompts: {e}", exc_info=True)
         return {
             "content": {
                 "prompts": [],
@@ -127,5 +116,4 @@ def list_prompts() -> dict:
             }
         }
     finally:
-        # logger.info("Exiting list_prompts")
         pass

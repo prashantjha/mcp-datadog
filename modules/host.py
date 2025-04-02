@@ -1,15 +1,10 @@
 import json
-import logging
 import sys
 from datadog_api_client import ApiClient
 from datadog_api_client.v1.api.hosts_api import HostsApi
 from config import configuration
 from mcp.server.fastmcp import FastMCP
 from pydantic import BaseModel, Field
-from datetime import datetime
-
-logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(module)s:%(lineno)d - %(message)s', stream=sys.stderr)
-logger = logging.getLogger(__name__)
 
 mcp = FastMCP("Datadog Host Service")
 
@@ -24,7 +19,6 @@ def list_hosts(
     count: int = Field(default=10, ge=1, le=1000, description="Max number of hosts to return (default: 10)")
 ) -> dict:
     """Retrieves all hosts from Datadog."""
-    # logger.info("Fetching host list from Datadog")
     try:
         with ApiClient(configuration) as api_client:
             hosts_api = HostsApi(api_client)
@@ -55,32 +49,26 @@ def list_hosts(
                     "content": hosts
                 }
                 
-                # logger.info("Successfully retrieved hosts.")
                 return result
             else:
-                # logger.error(f"Invalid response from Datadog API. Raw response: {response}")
                 return {"error": "Invalid response from Datadog API."}
     except Exception as e:
-        # logger.error(f"Error fetching hosts: {e}", exc_info=True)
         return {"error": f"Error fetching hosts: {e}"}
 
 @mcp.tool()
 def get_host_totals() -> dict:
     """Gets the total number of active hosts."""
-    # logger.info("Fetching host totals from Datadog")
     try:
         with ApiClient(configuration) as api_client:
             hosts_api = HostsApi(api_client)
             response = hosts_api.get_host_totals()
             return {"content": [{"type": "text", "text": json.dumps(response.to_dict(), indent=2)}]}
     except Exception as e:
-        # logger.error(f"Error fetching host totals: {e}", exc_info=True)
         return {"content": [{"type": "text", "text": f"Error fetching host totals: {e}"}]}
 
 @mcp.tool()
 def mute_host(host_name: str, message: str = "Muted via MCP") -> dict:
     """Mutes a specific host."""
-    # logger.info(f"Muting host: {host_name}")
     try:
         with ApiClient(configuration) as api_client:
             hosts_api = HostsApi(api_client)
@@ -88,19 +76,16 @@ def mute_host(host_name: str, message: str = "Muted via MCP") -> dict:
             response = hosts_api.mute_host(host_name, body=settings)
             return {"content": [{"type": "text", "text": json.dumps(response.to_dict(), indent=2)}]}
     except Exception as e:
-        # logger.error(f"Error muting host: {e}", exc_info=True)
         return {"content": [{"type": "text", "text": f"Error muting host: {e}"}]}
 
 @mcp.tool()
 def unmute_host(host_name: str) -> dict:
     """Unmutes a specific host."""
-    # logger.info(f"Unmuting host: {host_name}")
     try:
         with ApiClient(configuration) as api_client:
             hosts_api = HostsApi(api_client)
             response = hosts_api.unmute_host(host_name)
             return {"content": [{"type": "text", "text": json.dumps(response.to_dict(), indent=2)}]}
     except Exception as e:
-        # logger.error(f"Error unmuting host: {e}", exc_info=True)
         return {"content": [{"type": "text", "text": f"Error unmuting host: {e}"}]}
 

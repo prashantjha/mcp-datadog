@@ -9,9 +9,6 @@ from datadog_api_client.v1.api.downtimes_api import DowntimesApi
 from config import configuration
 from mcp.server.fastmcp import FastMCP
 
-logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(module)s:%(lineno)d - %(message)s', stream=sys.stderr)
-logger = logging.getLogger(__name__)
-
 mcp = FastMCP("Datadog Dashboards and Downtime Service")
 
 class DowntimeResponse(BaseModel):
@@ -22,56 +19,66 @@ class DowntimeResponse(BaseModel):
     end: int
 
 @mcp.tool()
-def list_downtimes(
-    current_only: bool = Field(default=False, description="List only currently active downtimes")
-) -> dict:
-    """Retrieves a list of Datadog scheduled downtimes."""
-    # logger.info("Starting list_downtimes")
+def create_downtime(
+    scope: str = Field(..., description="The scope to apply the downtime to"),
+    message: str = Field(default="", description="The message for the downtime"),
+    start: int = Field(default_factory=lambda: int(time.time()), description="Start time in epoch seconds"),
+    end: Optional[int] = Field(default=None, description="End time in epoch seconds"),
+    timezone: str = Field(default="UTC", description="Timezone for the downtime")
+) -> Dict[str, Any]:
+    """Create a new downtime."""
     try:
         with ApiClient(configuration) as api_client:
             downtimes_api = DowntimesApi(api_client)
-            response = downtimes_api.list_downtimes(current_only=current_only)
-
-            if response is not None:
-                downtimes_data = [
-                    DowntimeResponse(
-                        id=d.id,
-                        scope=d.scope,
-                        message=d.message or "No message provided",
-                        start=d.start,
-                        end=d.end or 0
-                    ).dict()
-                    for d in response
-                ]
-
-                result = {
-                    "content": {
-                        "downtimes": downtimes_data,
-                        "total": len(downtimes_data),
-                        "message": "Successfully retrieved downtimes."
-                    }
+            body = {
+                "data": {
+                    "type": "downtime",
+                    "attributes": {
+                        "scope": scope,
+                        "message": message,
+                        "start": start,
+                        "end": end,
+                        "timezone": timezone,
+                    },
                 }
-                # logger.info("Successfully retrieved downtimes.")
-                return result
-            else:
-                result = {
-                    "content": {
-                        "downtimes": [],
-                        "total": 0,
-                        "message": "Error: Invalid response from Datadog API."
-                    }
-                }
-                # logger.error("Invalid response from Datadog API.")
-                return result
-    except Exception as e:
-        # logger.error(f"Failed to retrieve downtimes: {e}", exc_info=True)
-        return {
-            "content": {
-                "downtimes": [],
-                "total": 0,
-                "message": f"Error fetching downtimes: {e}"
             }
-        }
-    finally:
-        # logger.info("Exiting list_downtimes")
-        pass
+            response = downtimes_api.create_downtime(body)
+            return {"status": "success", "message": "Downtime created successfully", "content": response.to_dict()}
+    except Exception as e:
+        return {"status": "error", "message": f"Error creating downtime: {e}"}
+
+@mcp.tool()
+def update_downtime(
+    downtime_id: str = Field(..., description="The ID of the downtime to update"),
+    scope: Optional[str] = Field(default=None, description="The new scope for the downtime"),
+    message: Optional[str] = Field(default=None, description="The new message for the downtime"),
+    end: Optional[int] = Field(default=None, description="The new end time in epoch seconds")
+) -> Dict[str, Any]:
+    """Update an existing downtime."""
+    try:
+        with ApiClient(configuration) as api_client:
+            downtimes_api = DowntimesApi(api_client)
+            body = {"data": {"type": "downtime", "id": downtime_id, "attributes": {}}}
+            if scope:
+                body["data"]["attributes"]["scope"] = scope
+            if message:
+                body["data"]["attributes"]["message"] = message
+            if end:
+                body["data"]["attributes"]["end"] = end
+            response = downtimes_api.update_downtime(downtime_id, body)
+            return {"status": "success", "message": "Downtime updated successfully", "content": response.to_dict()}
+    except Exception as e:
+        return {"status": "error", "message": f"Error updating downtime: {e}"}
+
+@mcp.tool()
+def cancel_downtime(
+    downtime_id: str = Field(..., description="The ID of the downtime to cancel")
+) -> Dict[str, Any]:
+    """Cancel an existing downtime."""
+    try:
+        with ApiClient(configuration) as api_client:
+            downtimes_api = DowntimesApi(api_client)
+            downtimes_api.cancel_downtime(downtime_id)
+            return {"status": "success", "message": "Downtime canceled successfully"}
+    except Exception as e:
+        return {"status": "error", "message": f"Error canceling downtime: {e}"}

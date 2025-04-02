@@ -6,9 +6,7 @@ from datadog_api_client import ApiClient
 from datadog_api_client.v2.api.incidents_api import IncidentsApi
 from config import configuration
 from mcp.server.fastmcp import FastMCP
-
-logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(module)s:%(lineno)d - %(message)s', stream=sys.stderr)
-logger = logging.getLogger(__name__)
+from typing import Optional
 
 mcp = FastMCP("Datadog Incident Service")
 
@@ -22,7 +20,6 @@ class GetIncidentParams(BaseModel):
 @mcp.tool()
 def list_incidents(params: ListIncidentsParams = ListIncidentsParams()) -> dict:
     """Retrieves a list of incidents from Datadog."""
-    # logger.info("Starting list_incidents")
     try:
         with ApiClient(configuration) as api_client:
             incidents_api = IncidentsApi(api_client)
@@ -31,45 +28,64 @@ def list_incidents(params: ListIncidentsParams = ListIncidentsParams()) -> dict:
             )
 
             if not response.data:
-                raise ValueError("No incidents data returned")
+                return {"status": "error", "message": "No incidents data returned", "content": []}
 
             incidents_data = [json.dumps(d, indent=2) for d in response.data]
-            try:
-                result = {"content": [{"type": "text", "text": "\n".join(incidents_data)}]}
-                # logger.info("Successfully retrieved incidents.")
-                return result
-            except TypeError as e:
-                # logger.error(f"Failed to serialize incidents to JSON: {e}. Data: {incidents_data}", exc_info=True)
-                return {"content": [{"type": "text", "text": f"Error serializing incidents: {e}"}]}
+            return {
+                "status": "success",
+                "message": "Incidents retrieved successfully",
+                "content": incidents_data
+            }
     except Exception as e:
-        # logger.error(f"Failed to retrieve incidents: {e}", exc_info=True)
-        return {"content": [{"type": "text", "text": f"Error fetching incidents: {e}"}]}
+        return {"status": "error", "message": f"Error fetching incidents: {e}", "content": []}
     finally:
-        # logger.info("Exiting list_incidents")
         pass
 
 @mcp.tool()
 def get_incident(params: GetIncidentParams) -> dict:
     """Retrieves a specific incident from Datadog."""
-    # logger.info("Starting get_incident")
     try:
         with ApiClient(configuration) as api_client:
             incidents_api = IncidentsApi(api_client)
             response = incidents_api.get_incident(params.incident_id)
 
             if not response.data:
-                raise ValueError("No incident data returned")
+                return {"status": "error", "message": "No incident data returned", "content": []}
 
-            try:
-                result = {"content": [{"type": "text", "text": json.dumps(response.data, indent=2)}]}
-                # logger.info("Successfully retrieved incident.")
-                return result
-            except TypeError as e:
-                # logger.error(f"Failed to serialize incident to JSON: {e}. Data: {response.data}", exc_info=True)
-                return {"content": [{"type": "text", "text": f"Error serializing incident: {e}"}]}
+            return {
+                "status": "success",
+                "message": "Incident retrieved successfully",
+                "content": [{"type": "text", "text": json.dumps(response.data, indent=2)}]
+            }
     except Exception as e:
-        # logger.error(f"Failed to retrieve incident: {e}", exc_info=True)
-        return {"content": [{"type": "text", "text": f"Error fetching incident: {e}"}]}
+        return {"status": "error", "message": f"Error fetching incident: {e}", "content": []}
     finally:
-        # logger.info("Exiting get_incident")
         pass
+
+@mcp.tool()
+def update_incident(incident_id: str, title: Optional[str] = None, status: Optional[str] = None) -> dict:
+    """Update an existing incident."""
+    try:
+        with ApiClient(configuration) as api_client:
+            incidents_api = IncidentsApi(api_client)
+            body = {"data": {"attributes": {}}}
+            if title:
+                body["data"]["attributes"]["title"] = title
+            if status:
+                body["data"]["attributes"]["status"] = status
+
+            response = incidents_api.update_incident(incident_id, body=body)
+            return {"status": "success", "message": "Incident updated successfully", "content": response.to_dict()}
+    except Exception as e:
+        return {"status": "error", "message": f"Error updating incident: {e}", "content": []}
+
+@mcp.tool()
+def delete_incident(incident_id: str) -> dict:
+    """Delete an incident."""
+    try:
+        with ApiClient(configuration) as api_client:
+            incidents_api = IncidentsApi(api_client)
+            incidents_api.delete_incident(incident_id)
+            return {"status": "success", "message": "Incident deleted successfully"}
+    except Exception as e:
+        return {"status": "error", "message": f"Error deleting incident: {e}"}

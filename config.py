@@ -1,11 +1,6 @@
 import os
-import logging
 from dotenv import load_dotenv
 from datadog_api_client import Configuration
-
-# Configure logging
-logging.basicConfig(level=logging.ERROR, format="%(asctime)s - %(levelname)s - %(module)s:%(lineno)d - %(message)s")
-logger = logging.getLogger(__name__)
 
 # Load environment variables
 load_dotenv()
