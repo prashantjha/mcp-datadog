@@ -49,8 +49,8 @@ mcp_tools = [
     cancel_downtime,
     # Host tools
     list_hosts,
-    mute_host,
-    unmute_host,
+    # mute_host,
+    # unmute_host,
     get_host_totals,
     # Incident tools
     list_incidents,
@@ -64,22 +64,22 @@ mcp_tools = [
     query_error_rate,
     query_downstream_latency,
     # Logs tools
-    archive_logs,
+    # archive_logs,
     # Events tools
-    delete_event,
+    # delete_event,
     # Tags tools
     list_host_tags,
-    add_host_tags,
-    delete_host_tags,
+    # add_host_tags,
+    # delete_host_tags,
     # Users tools
-    list_users,
-    get_user,
+    # list_users,
+    # get_user,
     # Roles tools
-    list_roles,
-    get_role,
-    create_role,
-    delete_role,
-    update_role,
+    # list_roles,
+    # get_role,
+    # create_role,
+    # delete_role,
+    # update_role,
     # Service Checks tools
     submit_service_check,
     list_service_checks,
