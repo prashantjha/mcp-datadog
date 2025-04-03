@@ -1,15 +1,11 @@
+from typing import Optional, Dict, Any
 from pydantic import BaseModel, Field
-import json
-import time
-import logging
-import sys
 from datadog_api_client import ApiClient
-from datadog_api_client.v1.api.dashboards_api import DashboardsApi
 from datadog_api_client.v1.api.downtimes_api import DowntimesApi
 from config import configuration
 from mcp.server.fastmcp import FastMCP
 
-mcp = FastMCP("Datadog Dashboards and Downtime Service")
+mcp = FastMCP("Datadog Downtime Service")
 
 class DowntimeResponse(BaseModel):
     id: int

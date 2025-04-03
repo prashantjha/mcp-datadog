@@ -3,6 +3,8 @@ from pydantic import Field
 from mcp.server.fastmcp import FastMCP
 from .apm import query_apm_errors, query_apm_latency, query_apm_spans
 
+mcp = FastMCP("Datadog Root Cause Analysis Service")
+
 @mcp.tool()
 def analyze_service_with_apm(
     service_name: str = Field(..., description="The name of the service to analyze"),
