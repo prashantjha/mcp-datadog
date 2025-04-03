@@ -139,7 +139,7 @@ def query_apm_latency(
     try:
         with ApiClient(configuration) as api_client:
             spans_api = SpansApi(api_client)
-            query = f"avg:trace.{service_name}.duration{99}percent"
+            query = f"avg:trace.servlet.request.hits{{service:{service_name}}}"
             response = spans_api.list_spans(
                 body={
                     "data": {

@@ -35,8 +35,8 @@ def list_traces(
                         "attributes": {
                             "filter": {
                                 "query": " ".join(filter_query),
-                                "from": from_time,
-                                "to": to_time,
+                                "from": str(from_time),
+                                "to": str(to_time),
                             },
                             "sort": sort,
                             "page": {"limit": limit},
