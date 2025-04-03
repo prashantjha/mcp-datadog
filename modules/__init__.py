@@ -92,8 +92,8 @@ mcp_tools = [
     query_apm_errors,
     query_apm_latency,
     query_apm_spans,
-    # Root Cause Analysis tools
-    analyze_service_with_apm,
+    # # Root Cause Analysis tools
+    # analyze_service_with_apm,
 ]
 
 mcp_tools.extend([

@@ -114,8 +114,8 @@ def query_apm_errors(
                         "attributes": {
                             "filter": {
                                 "query": query,
-                                "from": from_time,
-                                "to": to_time,
+                                "from": str(from_time),
+                                "to": str(to_time),
                             },
                             "page": {"limit": 1000},
                         },
@@ -146,8 +146,8 @@ def query_apm_latency(
                         "attributes": {
                             "filter": {
                                 "query": query,
-                                "from": from_time,
-                                "to": to_time,
+                                "from": str(from_time),
+                                "to": str(to_time),
                             },
                             "page": {"limit": 1000},
                         },
@@ -178,8 +178,8 @@ def query_apm_spans(
                         "attributes": {
                             "filter": {
                                 "query": query,
-                                "from": from_time,
-                                "to": to_time,
+                                "from": str(from_time),
+                                "to": str(to_time),
                             },
                             "page": {"limit": 1000},
                         },
