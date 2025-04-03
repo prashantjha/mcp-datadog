@@ -4,6 +4,9 @@ from datadog_api_client import ApiClient
 from datadog_api_client.v2.api.spans_api import SpansApi
 from config import configuration
 from mcp.server.fastmcp import FastMCP
+from datadog_api_client.exceptions import (
+    ApiException
+)
 
 mcp = FastMCP("Datadog APM Service")
 
@@ -25,8 +28,8 @@ def list_apm_traces(
                         "attributes": {
                             "filter": {
                                 "query": query,
-                                "from": from_time,
-                                "to": to_time,
+                                "from": str(from_time),
+                                "to": str(to_time),
                             },
                             "sort": sort,
                             "page": {"limit": limit},
@@ -72,8 +75,8 @@ def summarize_apm_traces(
                         "attributes": {
                             "filter": {
                                 "query": query,
-                                "from": from_time,
-                                "to": to_time,
+                                "from": str(from_time),
+                                "to": str(to_time),
                             },
                             "page": {"limit": 1000},
                         },

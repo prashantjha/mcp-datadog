@@ -4,6 +4,9 @@ from datadog_api_client import ApiClient
 from datadog_api_client.v1.api.metrics_api import MetricsApi
 from config import configuration
 from mcp.server.fastmcp import FastMCP
+from datadog_api_client.exceptions import (
+    ApiException
+)
 
 mcp = FastMCP("Datadog Metrics Service")
 
